@@ -2,7 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { sendMessage } = require("../controller/message.controller");
 const authenticateToken = require("../middleware/authMiddleware");
-
-router.post("/send", authenticateToken, sendMessage);
+const validateRequest = require("../middleware/validateRequest");
+const authSchema = require("../validator/auth.validator");
+router.post("/", authenticateToken, validateRequest(authSchema), sendMessage);
 
 module.exports = router;

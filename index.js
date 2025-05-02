@@ -3,9 +3,8 @@ const http = require("http");
 const cors = require("cors");
 const socketIo = require("socket.io");
 const dotenv = require("dotenv");
-
-const authRoutes = require("./src/routes/authRoutes");
-const chatRoutes = require("./src/routes/chatRoutes");
+const helmet = require("helmet");
+const globalRoutes = require("./src/routes/index");
 const sequelize = require("./src/config/db");
 const socketSetup = require("./src/socket/socket");
 
@@ -13,15 +12,14 @@ dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
+app.use(cors());
 const io = socketIo(server, {
   cors: { origin: "*" },
 });
-
-app.use(cors());
+app.use(helmet());
 app.use(express.json());
 
-app.use("/api/auth", authRoutes);
-app.use("/api/chat", chatRoutes);
+app.use("/api", globalRoutes);
 
 socketSetup(io);
 

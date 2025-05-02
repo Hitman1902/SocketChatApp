@@ -2,8 +2,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user.model");
 const { success, error } = require("../helpers/responsibleHelper");
-
-exports.register = async (req, res) => {
+const { generateToken } = require("../helpers/generateToken");
+const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
@@ -17,15 +17,12 @@ exports.register = async (req, res) => {
       email,
       password: hashedPassword,
     });
-    const token = jwt.sign(
-      { id: user.id, name: user.name },
-      process.env.JWT_SECRET,
-      { expiresIn: "520hrs" }
-    );
+    const token = generateToken(user.id, user.name);
     success(res, "User registered", {
       id: user.id,
       name: user.name,
       email: user.email,
+      token,
     });
   } catch (err) {
     console.error("Register Error:", err);
@@ -33,7 +30,7 @@ exports.register = async (req, res) => {
   }
 };
 
-exports.login = async (req, res) => {
+const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -43,11 +40,7 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return error(res, "Invalid credentials", 401);
 
-    const token = jwt.sign(
-      { id: user.id, name: user.name },
-      process.env.JWT_SECRET,
-      { expiresIn: "520hrs" }
-    );
+    const token = generateToken(user.id, user.name);
 
     success(res, "Login successful", { token });
   } catch (err) {
@@ -55,3 +48,4 @@ exports.login = async (req, res) => {
     error(res, "Login failed");
   }
 };
+module.exports = { register, login };
